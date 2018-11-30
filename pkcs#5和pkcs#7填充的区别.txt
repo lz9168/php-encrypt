@@ -1,0 +1,65 @@
+pkcs#5和pkcs#7填充的区别
+
+最近做到了关于加密和解密的部分。
+
+使用算法AES的时候，涉及到数据填充的部分，数据的填充有很多种方案，用的比较多的有pkcs#5，pkcs#7,
+
+下面的都是从网上转来的。结论就是在AES 的使用中，pkcs#5填充和pkcs#7填充没有任何区别。
+
+ 
+
+PKCS #7 填充字符串由一个字节序列组成，每个字节填充该填充字节序列的长度。
+
+假定块长度为 8，数据长度为 9，
+数据： FF FF FF FF FF FF FF FF FF
+PKCS7 填充： FF FF FF FF FF FF FF FF FF 07 07 07 07 07 07 07
+
+简单地说, PKCS5, PKCS7和SSL3, 以及CMS(Cryptographic Message Syntax)
+
+有如下相同的特点:
+1)填充的字节都是一个相同的字节
+2)该字节的值,就是要填充的字节的个数
+
+如果要填充8个字节,那么填充的字节的值就是0×8;
+要填充7个字节,那么填入的值就是0×7;
+
+…
+
+如果只填充１个字节，那么填入的值就是0×1;
+
+这种填充方法也叫PKCS5, 恰好8个字节时还要补8个字节的0×08
+
+正是这种即使恰好是8个字节也需要再补充字节的规定，可以让解密的数据很确定无误的移除多余的字节。
+
+
+
+ 
+
+ 
+
+标准
+
+PKCS #7: Cryptographic Message Syntax
+
+在 10.3节中讲到了上面提到的填充算法,  对Block Size并没有做规定
+
+PKCS #5: Password-Based Cryptography Specification
+
+在6.1.1 中对 填充做了说明
+但是因为该标准 只讨论了 8字节(64位) 块的加密, 对其他块大小没有做说明
+其 填充算法跟 PKCS7是一样的
+
+后来 AES 等算法, 把BlockSize扩充到 16个字节
+
+比如, Java中
+Cipher.getInstance(“AES/CBC/PKCS5Padding”)
+这个加密模式
+跟C#中的
+RijndaelManaged cipher = new RijndaelManaged();
+cipher.KeySize = 128;
+cipher.BlockSize = 128;
+cipher.Mode = CipherMode.CBC;
+cipher.Padding = PaddingMode.PKCS7;
+的加密模式是一样的
+
+因为AES并没有64位的块, 如果采用PKCS5, 那么实质上就是采用PKCS7
